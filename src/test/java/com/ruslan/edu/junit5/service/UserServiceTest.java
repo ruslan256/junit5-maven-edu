@@ -1,9 +1,11 @@
 package com.ruslan.edu.junit5.service;
 
 import com.ruslan.edu.junit5.dto.User;
+import com.ruslan.edu.junit5.paramresolver.UserServiceParamResolver;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.Map;
@@ -16,11 +18,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tags(@Tag("user"))
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @TestMethodOrder(MethodOrderer.DisplayName.class)
+@ExtendWith({
+        UserServiceParamResolver.class
+})
 class UserServiceTest {
 
     private static final User IVAN = User.of(1, "Ivan", "p091");
     private static final User PETER = User.of(2, "Peter", "p331");
     private UserService userService;
+
+    UserServiceTest(TestInfo testInfo) {
+        System.out.println();
+    }
 
     @BeforeAll
     static void init() {
@@ -29,15 +38,15 @@ class UserServiceTest {
     }
 
     @BeforeEach
-    void prepare() {
+    void prepare(UserService userService) {
         System.out.println("Before each: " + this);
-        userService = new UserService();
+        this.userService = userService;
     }
 
     @Test
     @Order(1)
     @DisplayName("users will be empty if no user added")
-    void usersEmptyIfNoUserAdded() {
+    void usersEmptyIfNoUserAdded(UserService userService) {
         System.out.println("Test1: " + this);
         List<User> users = userService.getAll();
         assertTrue(users.isEmpty(), "User list should be empty");
