@@ -6,10 +6,14 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
@@ -140,5 +144,38 @@ class UserServiceTest {
 
             assertTrue(maybeUser.isEmpty());
         }
+
+        @ParameterizedTest(name = "{arguments} test")
+//        @ArgumentsSource()
+//        @NullSource
+//        @EmptySource
+//        @NullAndEmptySource
+//        @ValueSource(strings = {
+//                "Ivan",
+//                "Peter"
+//        })
+//        @EnumSource
+        @MethodSource("com.ruslan.edu.junit5.service.UserServiceTest#getArgumentsForLoginTest")
+//        @CsvFileSource(resources = "/login-test-data.csv", delimiter = ';', numLinesToSkip = 1)
+//        @CsvSource({
+//                "Ivan,p091",
+//                "Peter,p331"
+//        })
+        @DisplayName("login parameterised test")
+        void loginParameterizedTest(String username, String password, Optional<User> user) {
+            userService.add(IVAN, PETER);
+
+            Optional<User> maybeUser = userService.login(username, password);
+            assertThat(maybeUser).isEqualTo(user);
+        }
+    }
+
+    static Stream<Arguments> getArgumentsForLoginTest() {
+        return Stream.of(
+                Arguments.of("Ivan", "p091", Optional.of(IVAN)),
+                Arguments.of("Peter", "p331", Optional.of(PETER)),
+                Arguments.of("Peter", "dummy", Optional.empty()),
+                Arguments.of("dummy", "p331", Optional.empty())
+        );
     }
 }
