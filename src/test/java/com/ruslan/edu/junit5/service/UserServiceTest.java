@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -129,12 +130,25 @@ class UserServiceTest {
             );
         }
 
-        @Test
-        void loginFailIfPasswordIsNotCorrect() {
+//        @Test
+//        @Disabled("flaky test, need to see")
+        @RepeatedTest(value = 5, name = RepeatedTest.LONG_DISPLAY_NAME)
+        void loginFailIfPasswordIsNotCorrect(RepetitionInfo repetitionInfo) {
             userService.add(IVAN);
             Optional<User> maybeUser = userService.login(IVAN.getUsername(), "dummy");
 
             assertTrue(maybeUser.isEmpty());
+        }
+
+        @Test // проверка на задержку выполнения тестируемого блока
+//        @Timeout(value = 200,unit = TimeUnit.MICROSECONDS)
+        void checkLoginFunctionalityPerformance() {
+            System.out.println("Thread-1 timeout: " + Thread.currentThread().getName());
+            Optional<User> result = assertTimeoutPreemptively(Duration.ofMillis(201L), () -> {
+                System.out.println("Thread-2 timeout: " + Thread.currentThread().getName());
+                Thread.sleep(150L);
+                return userService.login(IVAN.getUsername(), "dummy");
+            });
         }
 
         @Test
